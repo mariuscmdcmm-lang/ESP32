@@ -28,11 +28,44 @@
 #define Rw                          0x02  // Read/Write bit (Bit 1)
 #define Rs                          0x01  // Register Select bit (Bit 0)
 
-// Contol funcions 
+// Contol funcions
+
+/**
+ * @brief Select an I2C port number.
+ * @note You can use the same definitions from driver/i2c.h
+ * 
+ * @param i2c_num I2C port number
+ * 
+ * @return
+ *      - ESP_OK 
+ */
 esp_err_t lcd_init(i2c_port_t i2c_num);
+
+/**
+ * @brief Clears the display
+ */
 void lcd_clear(void);
+
+/**
+ * @brief Set cursor position
+ * 
+ * @param col Set the column number
+ * @param row Set the Row number
+ */
 void lcd_set_cursor(uint8_t col, uint8_t row);
+
+/**
+ * @brief Print a text 
+ * 
+ * @param str - Text to print
+ */
 void lcd_print(const char* str);
+
+/**
+ * @brief Write a single char
+ * 
+ * @param c Caracter to print
+ */
 void lcd_write_char(char c);
 
 #endif
