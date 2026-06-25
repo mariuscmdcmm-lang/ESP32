@@ -1,11 +1,14 @@
-Methods:
-lcd_init();
-lcd_clear();
-lcd_set_cursor(int point, int line);
-lcd_print(char* text);
+# Liquid-Cristal
+This component allows you to easely control an LCD using I2C module.
 
-Example of use:
+## Methods:
+`lcd_init();`.
+`lcd_clear();`.
+`lcd_set_cursor(int point, int line);`.
+`lcd_print(char* text);`.
 
+## Example of use:
+```c
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -77,3 +80,6 @@ void app_main(void)
         // ------------------- USER END WHILE ------------------ //
     }
 }
+```
+
+*Powered by Maryo*
