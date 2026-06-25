@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WebServer</title>
+        <script>
+            // Esperamos a que todo el HTML esté cargado antes de ejecutar el JS
+            document.addEventListener("DOMContentLoaded", () => {
+                document.getElementById('toggleButton').addEventListener('click', () => {
+                    fetch('/toggle', {method: 'POST'})
+                    .then(response => response.text())
+                    .then(data => {
+                        document.getElementById('estado').innerText = data;
+                    });
+                });
+                document.getElementById('button2').addEventListener('click', () => {
+                    fetch('/led_2_toggle', {method: 'POST'})
+                    .then(response => response.text())
+                    .then(data => {
+                        document.getElementById('estado2').innerText = data;
+                    });
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Maryo's server</h1>
+        <p>
+            <button id="toggleButton">Toggle</button> 
+            <span>Estado: <b id="estado">null</b></span>
+        </p>
+        <p>
+            <button id="button2">Cambiar 2</button>
+            <span>Estado 2 <b id="estado2">null</b></span>
+        </p>
+    </body>
+</html>
