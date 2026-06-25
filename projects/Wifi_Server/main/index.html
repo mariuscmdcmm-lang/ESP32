@@ -4,7 +4,16 @@
         <title>WebServer</title>
         <script>
             // Esperamos a que todo el HTML esté cargado antes de ejecutar el JS
+            function actualizar_estado(){
+                fetch('/estadoBoton', {method: 'GET'})
+                .then(r => r.text())
+                .then(data => {
+                    document.getElementById('estadoBoton').innerText = data;
+                });
+            }
+            
             document.addEventListener("DOMContentLoaded", () => {
+                setInterval(actualizar_estado, 50);
                 document.getElementById('toggleButton').addEventListener('click', () => {
                     fetch('/toggle', {method: 'POST'})
                     .then(response => response.text())
@@ -31,6 +40,9 @@
         <p>
             <button id="button2">Cambiar 2</button>
             <span>Estado 2 <b id="estado2">null</b></span>
+        </p>
+        <p>
+            <span>Estado boton: <span id="estadoBoton">null</span></span>
         </p>
     </body>
 </html>

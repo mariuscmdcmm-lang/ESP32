@@ -12,6 +12,7 @@
 
 #define LED_PIN 2
 #define LED_2 22
+#define BUTTON 4
 
 extern const uint8_t index_html_start[] asm("_binary_index_html_start");
 extern const uint8_t index_html_end[]   asm("_binary_index_html_end");
@@ -19,6 +20,7 @@ extern const uint8_t index_html_end[]   asm("_binary_index_html_end");
 esp_err_t root_get_handler(httpd_req_t *req);
 esp_err_t toggle_post_handler(httpd_req_t *req);
 esp_err_t led_2_toggle_handler(httpd_req_t *req);
+esp_err_t get_estado_handler(httpd_req_t *req);
 
 void app_main(void)
 {
@@ -85,6 +87,14 @@ void app_main(void)
             .user_ctx = NULL
         };
         httpd_register_uri_handler(server, &led_2_toggle);
+
+        httpd_uri_t button_state = {
+            .uri        = "/estadoBoton",
+            .method     = HTTP_GET,
+            .handler    = get_estado_handler,
+            .user_ctx = NULL
+        };
+        httpd_register_uri_handler(server, &button_state);
     }
 
     // Init GPIO
@@ -93,6 +103,10 @@ void app_main(void)
 
     gpio_reset_pin(LED_2);
     gpio_set_direction(LED_2, GPIO_MODE_OUTPUT);
+
+    gpio_reset_pin(BUTTON);
+    gpio_set_direction(BUTTON, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(BUTTON, GPIO_PULLUP_ONLY);
 
     while (1)
     {
@@ -128,6 +142,16 @@ esp_err_t led_2_toggle_handler(httpd_req_t *req)
     gpio_set_level(LED_2, led_2_state);
 
     const char *resp = led_2_state ? "ON" : "Off";
+    httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
+
+    return ESP_OK;
+}
+
+esp_err_t get_estado_handler(httpd_req_t *req)
+{
+    int level = gpio_get_level(BUTTON);
+    const char *resp = (level == 0) ? "On" : "Off";
+
     httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
 
     return ESP_OK;
