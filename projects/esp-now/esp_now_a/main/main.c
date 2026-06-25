@@ -11,6 +11,7 @@
 #include "nvs_flash.h"
 
 static const char *tag = "MAC_ADDRESS";
+uint8_t mac_receptor[] = {0x68, 0x09, 0x47, 0xf8, 0x2d, 0x40}; // <--- EDIT HERE
 
 esp_err_t x_init_wifi(void);
 esp_err_t leer_mac(void);
@@ -28,7 +29,6 @@ void app_main(void)
     leer_mac();
 
     // start communication
-    uint8_t mac_receptor[] = {0x68, 0x09, 0x47, 0xf8, 0x2d, 0x40};
     esp_now_peer_info_t peer_info = {};
     memcpy(peer_info.peer_addr, mac_receptor, 6);
     peer_info.channel = 1;
