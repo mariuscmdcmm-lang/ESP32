@@ -9,10 +9,15 @@
 #include "esp_http_server.h"
 #include "esp_log.h"
 #include "driver/gpio.h"
+#include "esp_adc/adc_oneshot.h"
 
 #define LED_PIN 2
 #define LED_2 22
 #define BUTTON 4
+
+static const char * tag = "Main";
+
+adc_oneshot_unit_handle_t adc1_handle;
 
 extern const uint8_t index_html_start[] asm("_binary_index_html_start");
 extern const uint8_t index_html_end[]   asm("_binary_index_html_end");
@@ -21,9 +26,19 @@ esp_err_t root_get_handler(httpd_req_t *req);
 esp_err_t toggle_post_handler(httpd_req_t *req);
 esp_err_t led_2_toggle_handler(httpd_req_t *req);
 esp_err_t get_estado_handler(httpd_req_t *req);
+esp_err_t get_pot_value(httpd_req_t *req);
+esp_err_t set_valor_handler(httpd_req_t *req);
 
 void app_main(void)
 {
+    // Init ADC
+    adc_oneshot_unit_init_cfg_t init_config1 = { .unit_id = ADC_UNIT_1 };
+    adc_oneshot_new_unit(&init_config1, &adc1_handle);
+
+    // Configuración del canal (ejemplo en el pin GPIO 34)
+    adc_oneshot_chan_cfg_t config_adc = { .bitwidth = ADC_BITWIDTH_12, .atten = ADC_ATTEN_DB_12 };
+    adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_6, &config_adc);
+
     // Init NVS Flash
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
@@ -95,6 +110,22 @@ void app_main(void)
             .user_ctx = NULL
         };
         httpd_register_uri_handler(server, &button_state);
+
+        httpd_uri_t getPot = {
+            .uri        = "/pot",
+            .method     = HTTP_GET,
+            .handler    = get_pot_value,
+            .user_ctx   = NULL
+        };
+        httpd_register_uri_handler(server, &getPot);
+
+        httpd_uri_t getSliderValue = {
+            .uri = "/set_valor",
+            .method = HTTP_POST,
+            .handler = set_valor_handler,
+            .user_ctx = NULL
+        };
+        httpd_register_uri_handler(server, &getSliderValue);
     }
 
     // Init GPIO
@@ -110,6 +141,7 @@ void app_main(void)
 
     while (1)
     {
+        
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
@@ -154,5 +186,34 @@ esp_err_t get_estado_handler(httpd_req_t *req)
 
     httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
 
+    return ESP_OK;
+}
+
+esp_err_t get_pot_value(httpd_req_t *req)
+{
+    int raw_data;
+    adc_oneshot_read(adc1_handle, ADC_CHANNEL_6, &raw_data);
+
+    char resp[10];
+    sprintf(resp, "%d", raw_data);
+
+    httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
+
+    return ESP_OK;
+}
+
+esp_err_t set_valor_handler(httpd_req_t *req)
+{
+    char buf[10];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    
+    if (ret <= 0) return ESP_FAIL; 
+
+    buf[ret] = '\0';
+    int valor = atoi(buf);
+
+    ESP_LOGI("WEB_INPUT", "Valor recibido desde la web: %d", valor);
+
+    httpd_resp_send(req, "Valor recibido", HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }

@@ -3,7 +3,6 @@
     <head>
         <title>WebServer</title>
         <script>
-            // Esperamos a que todo el HTML esté cargado antes de ejecutar el JS
             function actualizar_estado(){
                 fetch('/estadoBoton', {method: 'GET'})
                 .then(r => r.text())
@@ -12,8 +11,28 @@
                 });
             }
             
+            function getPotValue(){
+                fetch('/pot', {method: 'GET'})
+                .then(r => r.text())
+                .then(data => {
+                    document.getElementById('potValue').innerText = data;
+                });
+            }
+
+            function setSliderValue(){
+                document.getElementById('mySlider').addEventListener('change', (event) => {
+                    let valor = event.target.value;
+                    fetch('/set_valor', {
+                        method: 'POST',
+                        body: valor 
+                    });
+                });
+            }
+            
             document.addEventListener("DOMContentLoaded", () => {
                 setInterval(actualizar_estado, 50);
+                setInterval(getPotValue, 10000);
+                setInterval(setSliderValue, 1000);
                 document.getElementById('toggleButton').addEventListener('click', () => {
                     fetch('/toggle', {method: 'POST'})
                     .then(response => response.text())
@@ -43,6 +62,12 @@
         </p>
         <p>
             <span>Estado boton: <span id="estadoBoton">null</span></span>
+        </p>
+        <p>
+            <span>Pot Value: <span id="potValue">null</span></span>
+        </p>
+        <p>
+            <input type="range" min="0" max="100" value="50" id="mySlider">
         </p>
     </body>
 </html>
